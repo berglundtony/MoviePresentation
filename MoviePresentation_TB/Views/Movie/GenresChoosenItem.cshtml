@@ -1,0 +1,88 @@
+﻿@model IEnumerable<MoviePresentation_TB.Models.Result>
+
+
+<table class="table" id="FilterTableResults">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.vote_count)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.video)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.vote_average)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.title)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.popularity)
+        </th>
+        <th>
+
+            @Html.DisplayNameFor(model => model.poster_path)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.original_language)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.original_title)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.backdrop_path)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.adult)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.overview)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.release_date)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.vote_count)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.video)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.vote_average)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.title)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.popularity)
+            </td>
+            <td>
+                <img src="@Html.DisplayFor(modelitem => item.poster_path)" style="height:200px;width:200px;" />
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.original_language)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.original_title)
+            </td>
+            <td>
+                <img src="@Html.DisplayFor(modelitem => item.backdrop_path)" style="height:200px;width:200px;" />
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.adult)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.overview)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.release_date)
+            </td>
+        </tr>
+    }
+
+</table>

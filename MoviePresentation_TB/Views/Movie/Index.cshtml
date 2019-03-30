@@ -1,0 +1,224 @@
+﻿@model MoviePresentation_TB.Models.Genre
+<script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Index";
+}
+
+<h2>Movies</h2>
+
+@using (Ajax.BeginForm("GenresChoosenItem", "Movie", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "FilterTableResults" }, new { id = "FilterFormGenre" }))
+{
+    @Html.DropDownList("GenreID", Model.GenreDrop, new { id = "DropGenre", @class = "dropdown" })
+}
+<div class="input-group pull-right">
+    <input type="text" placeholder="Sök film... " class="form-control" id="SearchInput" />
+    <button type="submit">Sök</button>
+</div>
+<div id="Details-Results"></div>
+<div id="Latest-Results"></div>
+<div id="Search-Results"></div>
+<div id="Filter-Results">
+    @Html.Partial("GenresChoosenItem", Model._ResultList)
+</div>
+
+<script>
+
+    $(function () {
+        $("#FilterFormGenre").on("change",
+            function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    cache: false,
+                    url: this.action,
+                    type: this.method,
+                    async: true,
+                    dataType: 'html',
+                    data: $(this).serialize(),
+                    //beforeSend: function () {
+                    //    obj.addClass(window.async.disabledClass);
+                    //},
+                    success: function (data) {
+                        $("#Search-Results").hide();
+                        $("#Latest-Results").hide();
+                        $("#Details-Results").hide();
+                        $("#Filter-Results").show();
+                        $("#FilterTableResults").html(data);
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.log("Status: " + textStatus); console.log("Error: " + errorThrown);
+                        alert("Status: " + textStatus);
+                    }
+
+                })
+            });
+
+        var settings = {
+            "async": true,
+            "crossDomain": true,
+            "url": "https://api.themoviedb.org/3/movie/now_playing?page=1?language=en-US&api_key=0bd07cd4d4166d94ef83bad8d6d24b08",
+            "method": "GET",
+            "headers": {},
+            "data": "{}",
+            "contentType": 'application/json',
+        }
+
+
+        $.ajax(settings).done(function (response) {
+            $("#Filter-Results").hide();
+            console.log(response);
+            var results = response.results;
+
+            for (var i = 0; i < results.length; i++) {
+                var movie = results[i];
+                var id = movie.id;
+                var description = movie.overview;
+                var title = movie.title;
+                var image = 'https://image.tmdb.org/t/p/w500' + movie.poster_path;
+                var releaseDate = movie.release_date;
+
+                if (movie.poster_path != null) {
+                    $("#Latest-Results").append('<br><a href="#" class="detailsview"  data-movie_id="' + id + '"><h1 style="color:red;font-size:25px;">'
+                        + title + '</h1> ' + description + '<br> Release date: <b style="color:black">' + releaseDate + '</b > <br> <img style="width:155px;height:214px;" src="https://image.tmdb.org/t/p/w500' + movie.poster_path + '" /></a>');
+                }
+            }
+        }).error(function (e) {
+            console.log(e.message);
+        });
+
+
+
+        $('button').click(function () {
+            $("#Latest-Results").hide();
+            $("#Details-Results").hide();
+            $("#Filter-Results").hide();
+            $("#Search-Results").empty();
+            $("#Search-Results").show();
+            var url = 'https://api.themoviedb.org/3/',
+                mode = 'search/movie?query=',
+                input,
+                movieName,
+                key = '&api_key=0bd07cd4d4166d94ef83bad8d6d24b08';
+
+            var input = $("#SearchInput").val();
+            $("#SearchInput").val('Sök film...');
+            $("#SearchInput").on('click focusin', function () {
+                this.value = "";
+            })
+            movieName = encodeURI(input);
+
+            var settings = [];
+
+            settings = {
+                "async": true,
+                "crossDomain": true,
+                "url": url + mode + input + key,
+                "method": "GET",
+                "headers": {},
+                "data": "{}",
+                "contentType": 'application/json',
+            }
+
+            $.ajax(settings).done(function (response) {
+
+                console.log(response);
+                var results = response.results;
+
+                for (var i = 0; i < results.length; i++) {
+
+                    var movie = results[i];
+                    var id = movie.id;
+                    var description = movie.overview;
+                    var title = movie.title;
+                    var image = 'https://image.tmdb.org/t/p/w500' + movie.poster_path;
+                    var releaseDate = movie.release_date;
+
+                    if (movie.poster_path != null) {
+                        $("#Search-Results").append('<br><a href="#" class="detailsview"  data-movie_id="' + id + '"><h1 style="color:red;font-size:25px;">'
+                            + title + '</h1><p>' + description + '</p><p> Release date: <b style="color:black">' + releaseDate + '</b ></p><br><img style="width:155px;height:214px;" src="https://image.tmdb.org/t/p/w500' + movie.poster_path + '" /></a>');
+                    }
+                }
+            }).error(function (e) {
+                console.log(e.message);
+            });
+        })
+        $(document).on("click", "a.detailsview", function (e) {
+            e.stopPropagation();
+            $("#Latest-Results").hide();
+            $("#Search-Results").hide();
+            $("#Filter-Results").hide();
+            $("#Details-Results").empty();
+            $("#Details-Results").show();
+            var url = 'https://api.themoviedb.org/3/',
+                mode = 'movie/',
+                input,
+                movie_id,
+                language = '?language=en-US'
+            key = '&api_key=0bd07cd4d4166d94ef83bad8d6d24b08';
+
+            var input = $(this).data("movie_id");
+
+            movie_id = encodeURI(input);
+            var settings = {
+                "async": false,
+                "crossDomain": true,
+                "url": url + mode + input + language + key,
+                "method": "GET",
+                "headers": {},
+                "data": "{}"
+            }
+
+            $.ajax(settings).done(function (response) {
+
+                console.log(response);
+
+                var description = response.overview;
+
+                if (response.belongs_to_collection != null) {
+                    var str = JSON.stringify(response.belongs_to_collection);
+                    var datacol = JSON.parse(str);
+                    var collection = datacol.name;
+                } else {
+                    var collection = null;
+                }
+                var title = response.original_title;
+                var image = 'https://image.tmdb.org/t/p/w500' + response.poster_path;
+                var releaseDate = response.release_date;
+                var vote_average = response.vote_average;
+                var budget = response.budget;
+                var language = response.original_language;
+                var homepage = response.homepage;
+                var genres = [];
+
+                if (response.poster_path != null) {
+                    if (collection != null) {
+                        $("#Details-Results").append('<br><h3 style="color:balack;font-size:18px;">' + collection + '</h3><h1 style="color:red;font-size:25px;">'
+                            + title + '</h1><p>' + description + '</p><p> Release date: <b style="color:black">' + releaseDate + '</b ></p><p><b>Vote average: </b>' + vote_average + '</p><p><b>Original language: </b>' + language + '</p><p><b>Budget: </b>$'
+                            + budget + '</p><p><b>Homepage: </b><a href="' + homepage + '">' + homepage + '</a></p><b>Genres:</b><ul id="genreslist"></ul></p><p><b>Production companies:</b><ul id="companylist"></ul></p><p><b>Production countries:</b><ul id="countrylist"></ul></p><p><b>Spoken languages:</b><ul id="languagelist"></ul></p><br><img style="width:40%;height:40%;" src="https://image.tmdb.org/t/p/w500' + response.poster_path + '" /></a>');
+                    } else {
+                        $("#Details-Results").append('<br><h1 style="color:red;font-size:32px;">'
+                            + title + '</h1><p>' + description + '</p><p> Release date: <b style="color:black">' + releaseDate + '</b ></p><p><b>Vote average: </b>' + vote_average + '</p><p><b>Original language: </b>' + language + '</p><p><b>Budget: </b>$'
+                            + budget + '</p><p><b>Homepage: </b><a href="' + homepage + '">' + homepage + '</a></p><b>Genres:</b><ul id="genreslist"></ul></p><p><b>Production companies:</b><ul id="companylist"></ul></p><p><b>Production countries:</b><ul id="countrylist"></ul></p><p><b>Spoken languages:</b><ul id="languagelist"></ul></p><br><img style="width:40%;height:40%;" src="https://image.tmdb.org/t/p/w500' + response.poster_path + '" /></a>');
+                    }
+
+                    $.each(response.genres, function (i, item) {
+                        $("#genreslist").append('<li>' + item.name + '</li>');
+                    });
+                    $.each(response.production_companies, function (i, item) {
+                        $("#companylist").append('<li>' + item.name + '</li>');
+                    });
+                    $.each(response.production_countries, function (i, item) {
+                        $("#countrylist").append('<li>' + item.name + '</li>');
+                    });
+                    $.each(response.spoken_languages, function (i, item) {
+                        $("#languagelist").append('<li>' + item.name + '</li>');
+                    });
+                }
+            }).error(function (e) {
+                console.log(e.message);
+            });
+        })
+    })
+</script>
